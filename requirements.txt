@@ -1,0 +1,7 @@
+streamlit
+ultralytics
+huggingface-hub
+folium
+streamlit-folium
+pandas
+Pillow
