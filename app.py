@@ -33,10 +33,16 @@ def load_model():
 
 if "findings" not in st.session_state:
     st.session_state.findings = []
-if "latitude" not in st.session_state:
-    st.session_state.latitude = 42.4400
-if "longitude" not in st.session_state:
-    st.session_state.longitude = 77.2500
+if "latitude_input" not in st.session_state:
+    st.session_state.latitude_input = 42.4400
+if "longitude_input" not in st.session_state:
+    st.session_state.longitude_input = 77.2500
+if "pending_coordinates" in st.session_state:
+    pending = st.session_state.pop(
+        "pending_coordinates"
+    )
+    st.session_state.latitude_input = pending[0]
+    st.session_state.longitude_input = pending[1]
 
 st.title("AquaMap KG")
 st.caption(
@@ -53,12 +59,12 @@ with st.sidebar:
     latitude = st.number_input(
         "Широта",
         format="%.6f",
-        key="latitude",
+        key="latitude_input",
     )
     longitude = st.number_input(
         "Долгота",
         format="%.6f",
-        key="longitude",
+        key="longitude_input",
     )
     depth = st.number_input(
         "Глубина, м",
@@ -106,8 +112,10 @@ if clicked:
         new_latitude != latitude
         or new_longitude != longitude
     ):
-        st.session_state.latitude = new_latitude
-        st.session_state.longitude = new_longitude
+        st.session_state.pending_coordinates = (
+            new_latitude,
+            new_longitude,
+        )
         st.rerun()
 
 uploaded = st.file_uploader(
