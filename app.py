@@ -33,6 +33,10 @@ def load_model():
 
 if "findings" not in st.session_state:
     st.session_state.findings = []
+if "latitude" not in st.session_state:
+    st.session_state.latitude = 42.4400
+if "longitude" not in st.session_state:
+    st.session_state.longitude = 77.2500
 
 st.title("AquaMap KG")
 st.caption(
@@ -48,13 +52,13 @@ with st.sidebar:
     )
     latitude = st.number_input(
         "Широта",
-        value=42.4400,
         format="%.6f",
+        key="latitude",
     )
     longitude = st.number_input(
         "Долгота",
-        value=77.2500,
         format="%.6f",
+        key="longitude",
     )
     depth = st.number_input(
         "Глубина, м",
@@ -66,10 +70,45 @@ with st.sidebar:
         "Порог уверенности",
         0.05,
         0.90,
-        0.20,
+        0.15,
         0.05,
     )
     notes = st.text_area("Комментарий")
+
+st.subheader("Выберите место съёмки")
+st.caption(
+    "Нажмите на карту — широта и долгота "
+    "обновятся автоматически."
+)
+picker_map = folium.Map(
+    location=[latitude, longitude],
+    zoom_start=8,
+    tiles="OpenStreetMap",
+)
+folium.Marker(
+    [latitude, longitude],
+    tooltip="Выбранная точка",
+).add_to(picker_map)
+
+picker_data = st_folium(
+    picker_map,
+    width=None,
+    height=320,
+    key="coordinate_picker",
+    returned_objects=["last_clicked"],
+)
+
+clicked = picker_data.get("last_clicked")
+if clicked:
+    new_latitude = round(clicked["lat"], 6)
+    new_longitude = round(clicked["lng"], 6)
+    if (
+        new_latitude != latitude
+        or new_longitude != longitude
+    ):
+        st.session_state.latitude = new_latitude
+        st.session_state.longitude = new_longitude
+        st.rerun()
 
 uploaded = st.file_uploader(
     "Загрузите подводное фото",
@@ -86,11 +125,11 @@ if uploaded:
     with st.spinner("Ищем мусор..."):
         model = load_model()
         result = model.predict(
-        image,
-        conf=confidence,
-        imgsz=1280,
-        verbose=False,
-    )[0]
+            image,
+            conf=confidence,
+            imgsz=1280,
+            verbose=False,
+        )[0]
 
     names = result.names
     detected = []
@@ -179,6 +218,7 @@ st_folium(
     map_view,
     width=None,
     height=460,
+    key="findings_map",
     returned_objects=[],
 )
 
@@ -204,5 +244,5 @@ if st.session_state.findings:
 st.caption(
     "Прототип: результат модели требует "
     "проверки человеком. Координаты "
-    "в демо вводятся вручную."
+    "можно выбрать на карте или ввести вручную."
 )
