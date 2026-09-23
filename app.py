@@ -10,7 +10,7 @@ from streamlit_folium import st_folium
 from ultralytics import YOLO
 
 st.set_page_config(
-    page_title="AquaLabKG",
+    page_title="AquaMap KG",
     page_icon="🌊",
     layout="wide",
 )
@@ -34,7 +34,7 @@ def load_model():
 if "findings" not in st.session_state:
     st.session_state.findings = []
 
-st.title("AquaLabKG")
+st.title("AquaMap KG")
 st.caption(
     "Поиск подводного мусора "
     "и планирование уборок"
@@ -197,7 +197,7 @@ if st.session_state.findings:
     st.download_button(
         "Скачать CSV",
         data=csv_data,
-        file_name="aqualabkg_findings.csv",
+        file_name="aquamapkg_findings.csv",
         mime="text/csv",
     )
 
